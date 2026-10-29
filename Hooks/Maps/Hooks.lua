@@ -269,6 +269,24 @@ elseif F == "groupaitweakdata" then
         return _read_mission_preset(self, tweak_data, ...)
     end
 ----------------------------------------------------------------
+elseif F == "groupaistatebase" then
+    --A level without nav data has no areas at all, vanilla indexes the nil area (e.g. register_criminal when the
+    --player spawns) and the game crashes. Hand out an empty area instead, levels with nav data keep vanilla behaviour.
+    local get_area_from_nav_seg_id = GroupAIStateBase.get_area_from_nav_seg_id
+    function GroupAIStateBase:get_area_from_nav_seg_id(nav_seg_id, ...)
+        if self._nav_seg_to_area_map and next(self._nav_seg_to_area_map) then
+            return get_area_from_nav_seg_id(self, nav_seg_id, ...)
+        end
+        if not self._beardlib_no_nav_area then
+            BeardLib:log("[GroupAI] No area for nav segment '%s', the level probably has no nav data. Using an empty area.", tostring(nav_seg_id))
+            local area = self:_empty_area_data()
+            area.id = "beardlib_no_nav"
+            area.pos = Vector3()
+            self._beardlib_no_nav_area = area
+        end
+        return self._beardlib_no_nav_area
+    end
+----------------------------------------------------------------
 elseif F == "gameplaycentralmanager" then
 	function GamePlayCentralManager:add_move_unit(unit, from, to, speed, done_callback)
 		self._move_units = self._move_units or {}

@@ -4,14 +4,16 @@
 --the problem with the normal function is that you might have hooks with the same name so it'll remove ALL of them.
 
 function Hooks:RemovePostHookWithObject(object, id)
-    local hooks = self._function_hooks and self._function_hooks[object] or self._posthooks[object]
+    local hook_tbl = self._function_hooks or self._posthooks
+    local hooks = hook_tbl and hook_tbl[object]
     if not hooks then
         BeardLib:log("[Error] No post hooks for object '%s' while trying to remove id '%s'", tostring(object), tostring(id))
         return
     end
     for _, func in pairs(hooks) do
         local tbl = func.overrides.post or func.overrides
-        for override_i, override in ipairs(tbl) do
+        for override_i = #tbl, 1, -1 do
+            local override = tbl[override_i]
             if override and override.id == id then
                 table.remove(tbl, override_i)
             end
@@ -22,14 +24,16 @@ end
 --Same as RemovePostHookWithObject but for pre hooks.
 
 function Hooks:RemovePreHookWithObject(object, id)
-    local hooks = self._function_hooks and self._function_hooks[object] or self._prehooks[object]
+    local hook_tbl = self._function_hooks or self._prehooks
+    local hooks = hook_tbl and hook_tbl[object]
     if not hooks then
         BeardLib:log("[Error] No pre hooks for object '%s' while trying to remove id '%s'", tostring(object), tostring(id))
         return
     end
     for func_i, func in pairs(hooks) do
         local tbl = func.overrides.pre or func.overrides
-        for override_i, override in ipairs(tbl) do
+        for override_i = #tbl, 1, -1 do
+            local override = tbl[override_i]
             if override and override.id == id then
                 table.remove(tbl, override_i)
             end
@@ -51,7 +55,7 @@ function Hooks:QuickClass(hooks_name)
         Hooks:RemovePostHookWithObject(object, hooks_name..func_name)
     end
     function clss:RemovePre(object, func_name)
-        Hooks:RemovePreHookWithObject(object, func_name)
+        Hooks:RemovePreHookWithObject(object, hooks_name.."_pre_"..func_name)
     end
     return clss
 end
@@ -73,7 +77,7 @@ function Hooks:LazyClass(object, hooks_name)
         Hooks:RemovePostHookWithObject(clss.object, hooks_name..func_name)
     end
     function clss:RemovePre(func_name)
-        Hooks:RemovePreHookWithObject(clss.object, func_name)
+        Hooks:RemovePreHookWithObject(clss.object, hooks_name.."_pre_"..func_name)
     end
     return clss
 end
@@ -100,9 +104,9 @@ end
 function SafeClbk(...)
     local f = SimpleClbk(...)
     return function(...)
-        local success, ret = pcall(f)
+        local success, ret = pcall(f, ...)
         if not success then
-            BeardLib:log("[Safe Callback Error] %s", tostring(ret and ret.code or ""))
+            BeardLib:log("[Safe Callback Error] %s", tostring(type(ret) == "table" and ret.code or ret))
             return nil
         end
         return ret
@@ -112,9 +116,9 @@ end
 function SafeClassClbk(...)
     local f = ClassClbk(...)
     return function(...)
-        local success, ret = pcall(f)
+        local success, ret = pcall(f, ...)
         if not success then
-            BeardLib:log("[Safe Callback Error] %s", tostring(ret and ret.code or ""))
+            BeardLib:log("[Safe Callback Error] %s", tostring(type(ret) == "table" and ret.code or ret))
             return nil
         end
         return ret

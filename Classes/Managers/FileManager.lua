@@ -64,7 +64,7 @@ function BeardLibFileManager:Process(ids_ext, ids_path, name_mt)
 			local func = mdata.clbk or mdata.use_clbk
 			if not func or func() then
 				if mdata.mode and not self.process_modes[mdata.mode] then
-					BeardLib:Err("The process mode '%s' does not exist! Skipping...", data.mode)
+					BeardLib:Err("The process mode '%s' does not exist! Skipping...", mdata.mode)
 				else
 					local to_replace = (not mdata.mode or mdata.mode == "replace")
 					if to_replace and #mods > 1 then

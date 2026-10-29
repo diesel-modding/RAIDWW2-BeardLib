@@ -264,7 +264,7 @@ function table.script_merge(base_tbl, new_tbl, ignore)
                     for i, tbl in pairs(sub) do
                         if type(tbl) == "table" and tonumber(i) then
                             local parent_tbl = table.custom_insert(base_tbl, tbl, sub.insert)
-                            if not parent_tbl[tbl._meta] then
+                            if parent_tbl and not parent_tbl[tbl._meta] then
                                 parent_tbl[tbl._meta] = tbl
                             end
                             break
@@ -272,7 +272,7 @@ function table.script_merge(base_tbl, new_tbl, ignore)
                     end
                 else
                     local parent_tbl = table.custom_insert(base_tbl, sub, sub.index)
-                    if not parent_tbl[sub._meta] then
+                    if parent_tbl and not parent_tbl[sub._meta] then
                         parent_tbl[sub._meta] = sub
                     end
                     for _, param in pairs(special_params) do

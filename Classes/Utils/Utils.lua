@@ -22,7 +22,10 @@ function Utils:CheckParamsValidity(tbl, schema)
 end
 
 function Utils:CheckParamValidity(func_name, vari, var, desired_type, allow_nil)
-    if (var == nil and not allow_nil) or type(var) ~= desired_type then
+    if var == nil and allow_nil then
+        return true
+    end
+    if type(var) ~= desired_type then
         log(string.format("[%s] Parameter #%s, expected %s, got %s", func_name, vari, desired_type, tostring(var and type(var) or nil)))
         return false
     end

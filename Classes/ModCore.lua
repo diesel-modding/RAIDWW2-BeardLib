@@ -156,7 +156,12 @@ function ModCore:InitModules()
 	table.sort(self._config, function(a,b)
 		local a_ok = type(a) == "table" and order[a._meta] or false
 		local b_ok = type(b) == "table" and order[b._meta] or false
-		return (a_ok and not b_ok) or (a.priority or 1) > (b.priority or 1)
+		if not a_ok ~= not b_ok then
+			return not not a_ok
+		end
+		local a_prio = type(a) == "table" and tonumber(a.priority) or 1
+		local b_prio = type(b) == "table" and tonumber(b.priority) or 1
+		return a_prio > b_prio
 	end)
 
     for _, module_tbl in ipairs(self._config) do
@@ -361,7 +366,7 @@ function ModCore:Init() end
 function ModCore:GetPath() return self.ModPath end
 function ModCore:Disabled() return self._disabled end
 function ModCore:Enabled() return not self._disabled end
-function ModCore:Config() return not self._config end
+function ModCore:Config() return self._config end
 function ModCore:Priority() return not self.Priority end
 function ModCore:IsBLTMod() return self._blt_mod end
 function ModCore:MinLibVer() return self._config.min_lib_ver or -1 end
