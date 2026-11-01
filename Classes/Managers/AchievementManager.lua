@@ -528,6 +528,10 @@ function CustomAchievement:GiveReward()
             managers.gold_economy:add_gold(self._reward_amount)
 
         end
+
+        if managers.savefile then
+            managers.savefile:save_progress()
+        end
     end
 end
 
