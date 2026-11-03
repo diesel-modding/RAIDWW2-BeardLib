@@ -538,15 +538,29 @@ function BeardLibAchievementMenu:Close()
 	self._menu:SetEnabled(false)
 end
 
-function BeardLibAchievementMenu:SetEnabled(state)
-	self._menu:SetEnabled(state)
-
-	if not self._initialized then
-		self:InitPanels(self._menu)
-		self:InitHeader()
-		self:InitAccount()
-		self:InitPackages()
-
-		self._initialized = true
+function BeardLibAchievementMenu:Refresh()
+	if self._initialized then
+		self._menu:RemoveItem(self._holder)
+		self._menu:RemoveItem(self._header)
+		self._initialized = false
 	end
+
+	local mgr = BeardLib.Managers.Achievement
+	mgr._tweak_data = tweak_data.achievement.custom_achievements or {}
+	mgr:SetupAchievements()
+
+	self:InitPanels(self._menu)
+	self:InitHeader()
+	self:InitAccount()
+	self:InitPackages()
+
+	self._initialized = true
+end
+
+function BeardLibAchievementMenu:SetEnabled(state)
+	if state and not self._menu:Enabled() then
+		self:Refresh()
+	end
+
+	self._menu:SetEnabled(state)
 end
